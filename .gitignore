@@ -1,2 +1,5 @@
 # IDE
 /.idea
+
+# Docker local data (runtime database files)
+/docker-data/
