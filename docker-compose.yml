@@ -6,6 +6,15 @@ services:
       dockerfile: inventory-service/Dockerfile_local
     ports:
       - "3001:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: local
+      MYSQL_HOST: mysql
+      MYSQL_PORT: 3306
+      MYSQL_USER: root
+      MYSQL_PASSWORD: root
+      MYSQL_DATABASE: orders
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
     volumes:
       - ./inventory-service/src:/app/inventory-service/src
     depends_on:
