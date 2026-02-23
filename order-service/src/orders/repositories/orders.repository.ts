@@ -31,4 +31,8 @@ export class OrdersRepository {
       relations: { items: true },
     });
   }
+
+  async delete(id: string): Promise<void> {
+    await this.repository.delete(id);
+  }
 }

@@ -32,7 +32,16 @@ export class OrdersService {
     });
     this.logger.log(`Order created successfully: ${saved.id}`);
 
-    await this.publishOrderCreated(saved);
+    try {
+      await this.publishOrderCreated(saved);
+    } catch (error) {
+      this.logger.error(
+        `Failed to publish order.created event for order: ${saved.id}, rolling back`,
+        (error as Error).stack,
+      );
+      await this.ordersRepository.delete(saved.id);
+      throw error;
+    }
 
     return saved;
   }
@@ -63,18 +72,7 @@ export class OrdersService {
       })),
     };
 
-    try {
-      await this.amqpConnection.publish(
-        'orders.events',
-        'order.created',
-        event,
-      );
-      this.logger.log(`Published order.created event for order: ${order.id}`);
-    } catch (error) {
-      this.logger.error(
-        `Failed to publish order.created event for order: ${order.id}`,
-        (error as Error).stack,
-      );
-    }
+    await this.amqpConnection.publish('orders.events', 'order.created', event);
+    this.logger.log(`Published order.created event for order: ${order.id}`);
   }
 }

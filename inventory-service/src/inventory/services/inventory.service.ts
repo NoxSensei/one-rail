@@ -61,31 +61,6 @@ export class InventoryService {
           await this.inventoryRepository.save(inventoryItem, manager);
         }
       });
-
-      if (duplicate) {
-        this.logger.warn(
-          `Duplicate event ${eventId} for order ${orderId}, skipping`,
-        );
-        return;
-      }
-
-      const reservedEvent: InventoryReservedEvent = {
-        eventId: crypto.randomUUID(),
-        orderId,
-        reservedAt: new Date(),
-        items: items.map(({ productId, quantity }) => ({
-          productId,
-          quantity,
-        })),
-      };
-
-      await this.amqpConnection.publish(
-        'inventory.events',
-        'inventory.reserved',
-        reservedEvent,
-      );
-
-      this.logger.log(`Inventory reserved for order: ${orderId}`);
     } catch (error) {
       const reason = error instanceof Error ? error.message : 'Unknown error';
 
@@ -105,6 +80,57 @@ export class InventoryService {
         'inventory.failed',
         failedEvent,
       );
+
+      return;
+    }
+
+    if (duplicate) {
+      this.logger.warn(
+        `Duplicate event ${eventId} for order ${orderId}, skipping`,
+      );
+      return;
+    }
+
+    const reservedEvent: InventoryReservedEvent = {
+      eventId: crypto.randomUUID(),
+      orderId,
+      reservedAt: new Date(),
+      items: items.map(({ productId, quantity }) => ({
+        productId,
+        quantity,
+      })),
+    };
+
+    try {
+      await this.amqpConnection.publish(
+        'inventory.events',
+        'inventory.reserved',
+        reservedEvent,
+      );
+
+      this.logger.log(`Inventory reserved for order: ${orderId}`);
+    } catch (publishError) {
+      this.logger.error(
+        `Failed to publish inventory.reserved for order ${orderId}, rolling back`,
+        (publishError as Error).stack,
+      );
+
+      await this.dataSource.transaction(async (manager) => {
+        await this.inventoryReservationRepository.deleteByOrderId(orderId, manager);
+
+        for (const { productId, quantity } of items) {
+          const inventoryItem =
+            await this.inventoryRepository.findByProductIdWithLock(productId, manager);
+
+          if (inventoryItem) {
+            inventoryItem.availableQuantity += quantity;
+            inventoryItem.reservedQuantity -= quantity;
+            await this.inventoryRepository.save(inventoryItem, manager);
+          }
+        }
+      });
+
+      throw publishError;
     }
   }
 }
