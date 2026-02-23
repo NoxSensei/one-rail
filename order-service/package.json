@@ -24,10 +24,10 @@
     "migration:down": "typeorm-ts-node-commonjs migration:revert -d src/infrastructure/orders-data-source/data-source.ts"
   },
   "dependencies": {
+    "@golevelup/nestjs-rabbitmq": "^7.0.0",
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.3",
     "@nestjs/core": "^11.0.1",
-    "@golevelup/nestjs-rabbitmq": "^7.0.0",
     "@nestjs/platform-express": "^11.0.1",
     "@nestjs/typeorm": "^11.0.0",
     "amqp-connection-manager": "^5.0.0",
@@ -46,10 +46,12 @@
     "@one-rail/eslint-config": "file:../shared/eslint",
     "@one-rail/prettier-config": "file:../shared/prettier",
     "@types/amqplib": "^0.10.8",
+    "@types/better-sqlite3": "^7.6.13",
     "@types/express": "^5.0.0",
     "@types/jest": "^30.0.0",
     "@types/node": "^22.10.7",
     "@types/supertest": "^6.0.2",
+    "better-sqlite3": "^12.6.2",
     "eslint": "^9.18.0",
     "jest": "^30.0.0",
     "prettier": "^3.4.2",
@@ -67,15 +69,15 @@
       "json",
       "ts"
     ],
-    "rootDir": "src",
-    "testRegex": ".*\\.spec\\.ts$",
+    "rootDir": ".",
+    "testRegex": "src/.*\\.spec\\.ts$",
     "transform": {
       "^.+\\.(t|j)s$": "ts-jest"
     },
     "collectCoverageFrom": [
-      "**/*.(t|j)s"
+      "src/**/*.(t|j)s"
     ],
-    "coverageDirectory": "../coverage",
+    "coverageDirectory": "./coverage",
     "testEnvironment": "node"
   }
 }
