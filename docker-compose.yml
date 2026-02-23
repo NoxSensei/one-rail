@@ -32,6 +32,11 @@ services:
       dockerfile: notification-service/Dockerfile_local
     ports:
       - "3002:3000"
+    environment:
+      PORT: 3000
+      NODE_ENV: local
+      RABBITMQ_URL: amqp://guest:guest@rabbitmq:5672
+      MONGODB_URL: mongodb://root:root@mongodb:27017/notifications?authSource=admin
     volumes:
       - ./notification-service/src:/app/notification-service/src
     depends_on:
