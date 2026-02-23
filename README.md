@@ -90,11 +90,11 @@ All services, databases, and the broker start together. Health checks ensure the
 
 ---
 
-## API
+## Happy Path
 
-Base URL: `http://localhost:3003`
+Two products are pre-seeded on startup: `prod-abc` (100 units) and `prod-xyz` (50 units).
 
-### Create an order
+### Step 1 — Create an order
 
 ```bash
 curl -X POST http://localhost:3003/orders \
@@ -111,22 +111,61 @@ curl -X POST http://localhost:3003/orders \
 
 ```json
 {
-  "id": "a1b2c3d4-...",
+  "id": "e3d2c1b0-aaaa-bbbb-cccc-000000000001",
   "status": "PENDING",
   "totalAmount": "109.97",
-  "items": [...],
-  "createdAt": "...",
-  "updatedAt": "..."
+  "createdAt": "2026-02-23T15:00:00.000Z",
+  "updatedAt": "2026-02-23T15:00:00.000Z",
+  "items": [
+    { "id": "...", "productId": "prod-abc", "quantity": 2, "price": "49.99" },
+    { "id": "...", "productId": "prod-xyz", "quantity": 1, "price": "9.99" }
+  ]
 }
 ```
 
-### Get an order
+Copy the returned `id` for the next steps.
+
+### Step 2 — Fetch the order
 
 ```bash
-curl http://localhost:3003/orders/a1b2c3d4-...
+curl http://localhost:3003/orders/e3d2c1b0-aaaa-bbbb-cccc-000000000001
 ```
 
-**Response 200** — same shape as above. Returns **404** if the order does not exist.
+Returns the same shape as above. Returns **404** if the id does not exist.
+
+### Step 3 — Verify inventory was reserved
+
+Connect to MySQL and check that stock was deducted:
+
+```bash
+docker compose exec mysql \
+  mysql -uroot -proot inventory \
+  -e "SELECT productId, availableQuantity, reservedQuantity FROM inventory_items;"
+```
+
+```
++------------+-------------------+-------------------+
+| productId  | availableQuantity | reservedQuantity  |
++------------+-------------------+-------------------+
+| prod-abc   |                98 |                 2 |
+| prod-xyz   |                49 |                 1 |
++------------+-------------------+-------------------+
+```
+
+### Step 4 — Verify notifications were stored
+
+```bash
+docker compose exec mongodb \
+  mongosh "mongodb://root:root@localhost:27017/notifications?authSource=admin" \
+  --eval 'db.notifications.find({}, {type:1, orderId:1, _id:0}).pretty()'
+```
+
+```json
+{ "type": "ORDER_CREATED",       "orderId": "e3d2c1b0-..." }
+{ "type": "INVENTORY_RESERVED",  "orderId": "e3d2c1b0-..." }
+```
+
+You can also inspect the RabbitMQ message flow at **http://localhost:15672** (guest / guest).
 
 ---
 

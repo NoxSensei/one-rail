@@ -1,8 +1,12 @@
 // ensures .env is loaded when used via TypeORM CLI (outside NestJS)
 import 'dotenv/config';
 import { DataSource, DataSourceOptions } from 'typeorm';
+import { AddInventoryEntity1771813703834 } from '../../../migrations/1771813703834-add_inventory_entity';
+import { AddInventoryReservationEntity1771821095893 } from '../../../migrations/1771821095893-add_inventory_reservation_entity';
+import { SeedInventoryItems1771821095895 } from '../../../migrations/1771821095895-seed_inventory_items';
 
-// Connection-only options shared with the NestJS module (no globs — those are CLI-only)
+// Connection-only options shared with the NestJS module.
+// migrations is an array of classes so TypeORM never has to require() .ts files at runtime.
 export const connectionOptions: DataSourceOptions = {
   type: 'mysql',
   host: process.env.MYSQL_HOST ?? 'localhost',
@@ -11,13 +15,17 @@ export const connectionOptions: DataSourceOptions = {
   password: process.env.MYSQL_PASSWORD ?? 'root',
   database: process.env.MYSQL_DATABASE ?? 'inventory',
   synchronize: false,
+  migrations: [
+    AddInventoryEntity1771813703834,
+    AddInventoryReservationEntity1771821095893,
+    SeedInventoryItems1771821095895,
+  ],
 };
 
 // Full DataSource used by the TypeORM CLI for migrations
 const InventoryDataSource = new DataSource({
   ...connectionOptions,
   entities: ['src/**/*.entity.ts'],
-  migrations: ['migrations/*.ts'],
 });
 
 export default InventoryDataSource;
