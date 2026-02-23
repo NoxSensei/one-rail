@@ -60,7 +60,7 @@ sequenceDiagram
 
 | Service | Port | Database | Role |
 |---|---|---|---|
-| order-service | 3003 | MySQL `orders` | HTTP API — creates orders, publishes events |
+| order-service | 3003 | MySQL `orders` | HTTP API - creates orders, publishes events |
 | inventory-service | 3001 | MySQL `inventory` | Consumes `order.created`, reserves stock |
 | notification-service | 3002 | MongoDB `notifications` | Consumes all events, stores audit log |
 
@@ -69,8 +69,8 @@ sequenceDiagram
 | Component | Port | Purpose |
 |---|---|---|
 | RabbitMQ | 5672 / 15672 | Message broker (management UI on 15672) |
-| MySQL 8 | 3306 | Relational storage for orders and inventory |
-| MongoDB 7 | 27017 | Document storage for notifications |
+| MySQL  | 3306 | Relational storage for orders and inventory |
+| MongoDB  | 27017 | Document storage for notifications |
 
 ---
 
@@ -94,7 +94,7 @@ All services, databases, and the broker start together. Health checks ensure the
 
 Two products are pre-seeded on startup: `prod-abc` (100 units) and `prod-xyz` (50 units).
 
-### Step 1 — Create an order
+### Step 1 - Create an order
 
 ```bash
 curl -X POST http://localhost:3003/orders \
@@ -125,15 +125,15 @@ curl -X POST http://localhost:3003/orders \
 
 Copy the returned `id` for the next steps.
 
-### Step 2 — Fetch the order
+### Step 2 - Fetch the order
 
 ```bash
-curl http://localhost:3003/orders/e3d2c1b0-aaaa-bbbb-cccc-000000000001
+curl http://localhost:3003/orders/:id
 ```
 
 Returns the same shape as above. Returns **404** if the id does not exist.
 
-### Step 3 — Verify inventory was reserved
+### Step 3 - Verify inventory was reserved
 
 Connect to MySQL and check that stock was deducted:
 
@@ -152,7 +152,7 @@ docker compose exec mysql \
 +------------+-------------------+-------------------+
 ```
 
-### Step 4 — Verify notifications were stored
+### Step 4 - Verify notifications were stored
 
 ```bash
 docker compose exec mongodb \
@@ -186,7 +186,7 @@ cd notification-service && npm test
 
 ### Event-driven, not synchronous RPC
 
-Services communicate exclusively through RabbitMQ exchanges — no HTTP calls between them. This means each service can be deployed, restarted, or scaled independently. The order-service does not know inventory-service exists; it only knows it must publish an event.
+Services communicate exclusively through RabbitMQ exchanges - no HTTP calls between them. This means each service can be deployed, restarted, or scaled independently. The order-service does not know inventory-service exists; it only knows it must publish an event.
 
 ### Topic exchanges with dedicated queues per routing key
 
@@ -201,7 +201,7 @@ Every event carries a generated `eventId`. Consumers deduplicate before acting:
 
 ### Retry with dead-letter routing
 
-Consumers track retry attempts in a custom `x-retry-count` message header. On failure the handler re-publishes the message with an incremented count and acknowledges the original. After three failures the message is nacked without requeue, which routes it via the queue's `x-dead-letter-exchange` argument to a dead-letter queue for manual inspection — nothing is silently dropped.
+Consumers track retry attempts in a custom `x-retry-count` message header. On failure the handler re-publishes the message with an incremented count and acknowledges the original. After three failures the message is nacked without requeue, which routes it via the queue's `x-dead-letter-exchange` argument to a dead-letter queue for manual inspection - nothing is silently dropped.
 
 ### Transactional rollback on publish failure
 
@@ -212,4 +212,4 @@ If a service successfully commits to the database but then fails to publish the 
 
 ### Separate databases per service
 
-Each service owns its own schema and database engine chosen for its workload. The inventory and order services use MySQL for strong transactional guarantees and foreign-key integrity. The notification service uses MongoDB because it stores arbitrary event payloads with no fixed schema — a document store is a natural fit and avoids defining a column for every possible event field.
+Each service owns its own schema and database engine chosen for its workload. The inventory and order services use MySQL for strong transactional guarantees and foreign-key integrity. The notification service uses MongoDB because it stores arbitrary event payloads with no fixed schema - a document store is a natural fit and avoids defining a column for every possible event field.
