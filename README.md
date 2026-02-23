@@ -8,20 +8,20 @@ A three-service event-driven system built with NestJS, RabbitMQ, MySQL, and Mong
 
 ```mermaid
 graph TD
-    Client -->|POST /orders\nGET /orders/:id| OS
+    Client -->|POST /orders <br> GET /orders/:id| OS
 
-    OS["order-service\n:3003\n(MySQL: orders)"]
-    IS["inventory-service\n:3001\n(MySQL: inventory)"]
-    NS["notification-service\n:3002\n(MongoDB: notifications)"]
+    OS["order-service:3003<br>(MySQL: orders)"]
+    IS["inventory-service:3001<br>(MySQL: inventory)"]
+    NS["notification-service:3002<br>(MongoDB: notifications)"]
 
-    OS -->|"orders.events\norder.created"| RMQ[(RabbitMQ)]
+    OS -->|"orders.events<br>order.created"| RMQ[(RabbitMQ)]
 
     RMQ -->|"order.created"| IS
     RMQ -->|"order.created"| NS
 
-    IS -->|"inventory.events\ninventory.reserved\nor inventory.failed"| RMQ
+    IS -->|"inventory.events<br>inventory.reserved<br>inventory.failed"| RMQ
 
-    RMQ -->|"inventory.reserved\nor inventory.failed"| NS
+    RMQ -->|"inventory.reserved<br>inventory.failed"| NS
 ```
 
 ### Event flow
