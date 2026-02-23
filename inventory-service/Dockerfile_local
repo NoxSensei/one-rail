@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY shared/eslint/   ./shared/eslint/
+COPY shared/prettier/ ./shared/prettier/
+RUN cd shared/eslint && npm install
+
+COPY inventory-service/ ./inventory-service/
+RUN cd inventory-service && npm ci
+
+WORKDIR /app/inventory-service
+
+EXPOSE 3000
+CMD ["npm", "run", "start:dev"]

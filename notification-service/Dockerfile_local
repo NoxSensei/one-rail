@@ -1,0 +1,15 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+COPY shared/eslint/   ./shared/eslint/
+COPY shared/prettier/ ./shared/prettier/
+RUN cd shared/eslint && npm install
+
+COPY notification-service/ ./notification-service/
+RUN cd notification-service && npm ci
+
+WORKDIR /app/notification-service
+
+EXPOSE 3000
+CMD ["npm", "run", "start:dev"]
