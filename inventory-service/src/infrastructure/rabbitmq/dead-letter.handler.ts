@@ -10,7 +10,7 @@ export function deadLetterErrorHandler(
   msg: ConsumeMessage,
   error: unknown,
 ): void {
-  const retryCount: number = msg.properties.headers?.['x-retry-count'] ?? 0;
+  const retryCount: number = msg.properties.headers?.['x-retry-count'] as number ?? 0;
   const errorMessage = error instanceof Error ? error.message : String(error);
 
   if (retryCount < MAX_RETRIES) {

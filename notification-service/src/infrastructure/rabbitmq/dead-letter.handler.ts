@@ -10,7 +10,7 @@ export function deadLetterErrorHandler(
   msg: ConsumeMessage,
   error: unknown,
 ): void {
-  const retryCount: number = msg.properties.headers?.['x-retry-count'] ?? 0;
+  const retryCount: number = msg.properties.headers?.['x-retry-count'] as number ?? 0;
   const errorMessage = error instanceof Error ? error.message : String(error);
 
   if (retryCount < MAX_RETRIES) {
@@ -29,7 +29,6 @@ export function deadLetterErrorHandler(
     logger.error(
       `Message failed after ${MAX_RETRIES} retries, routing to DLQ: ${errorMessage}`,
     );
-    // nack without requeue → x-dead-letter-exchange on the queue sends it to the DLQ
     channel.nack(msg, false, false);
   }
 }
