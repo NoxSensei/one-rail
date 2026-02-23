@@ -20,7 +20,10 @@ export class InventoryItemRepository {
     });
   }
 
-  save(item: InventoryItemEntity, manager: EntityManager): Promise<InventoryItemEntity> {
+  save(
+    item: InventoryItemEntity,
+    manager: EntityManager,
+  ): Promise<InventoryItemEntity> {
     return manager.save(InventoryItemEntity, item);
   }
 }

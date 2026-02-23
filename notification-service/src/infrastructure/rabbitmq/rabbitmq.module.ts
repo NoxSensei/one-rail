@@ -21,7 +21,9 @@ import { AmqpSetupService } from './amqp-setup.service';
             options: { durable: true },
           },
         ],
-        uri: config.get<string>('RABBITMQ_URL') ?? 'amqp://guest:guest@localhost:5672',
+        uri:
+          config.get<string>('RABBITMQ_URL') ??
+          'amqp://guest:guest@localhost:5672',
         connectionInitOptions: { wait: false },
       }),
     }),

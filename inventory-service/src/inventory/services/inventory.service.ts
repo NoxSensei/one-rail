@@ -116,11 +116,17 @@ export class InventoryService {
       );
 
       await this.dataSource.transaction(async (manager) => {
-        await this.inventoryReservationRepository.deleteByOrderId(orderId, manager);
+        await this.inventoryReservationRepository.deleteByOrderId(
+          orderId,
+          manager,
+        );
 
         for (const { productId, quantity } of items) {
           const inventoryItem =
-            await this.inventoryRepository.findByProductIdWithLock(productId, manager);
+            await this.inventoryRepository.findByProductIdWithLock(
+              productId,
+              manager,
+            );
 
           if (inventoryItem) {
             inventoryItem.availableQuantity += quantity;

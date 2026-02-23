@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotFoundException } from '@nestjs/common';
 import { AmqpConnection } from '@golevelup/nestjs-rabbitmq';
@@ -69,7 +72,10 @@ describe('OrdersService', () => {
       const result = await service.createOrder(dto);
 
       expect(ordersRepository.save).toHaveBeenCalledWith(
-        expect.objectContaining({ status: OrderStatus.PENDING, totalAmount: 150 }),
+        expect.objectContaining({
+          status: OrderStatus.PENDING,
+          totalAmount: 150,
+        }),
       );
       expect(amqpConnection.publish).toHaveBeenCalledWith(
         'orders.events',
@@ -106,7 +112,9 @@ describe('OrdersService', () => {
       amqpConnection.publish.mockRejectedValue(new Error('AMQP unavailable'));
 
       await expect(
-        service.createOrder({ items: [{ productId: 'prod-1', quantity: 1, price: 100 }] }),
+        service.createOrder({
+          items: [{ productId: 'prod-1', quantity: 1, price: 100 }],
+        }),
       ).rejects.toThrow('AMQP unavailable');
 
       expect(ordersRepository.delete).toHaveBeenCalledWith(order.id);
@@ -127,7 +135,9 @@ describe('OrdersService', () => {
     it('throws NotFoundException when order does not exist', async () => {
       ordersRepository.findById.mockResolvedValue(null);
 
-      await expect(service.getOrderById('missing-id')).rejects.toThrow(NotFoundException);
+      await expect(service.getOrderById('missing-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

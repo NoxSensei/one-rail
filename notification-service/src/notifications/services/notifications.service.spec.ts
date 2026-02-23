@@ -1,7 +1,13 @@
+/* eslint-disable @typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+
 import { Test, TestingModule } from '@nestjs/testing';
 import { NotificationsService } from './notifications.service';
 import { NotificationsRepository } from '../repositories/notifications.repository';
-import { NotificationType, NotificationDocument } from '../schemas/notification.schema';
+import {
+  NotificationType,
+  NotificationDocument,
+} from '../schemas/notification.schema';
 import type { OrderCreatedEvent } from '../../orders/events/order-created.event';
 import type { InventoryReservedEvent } from '../../inventory/events/inventory-reserved.event';
 import type { InventoryFailedEvent } from '../../inventory/events/inventory-failed.event';
@@ -68,7 +74,9 @@ describe('NotificationsService', () => {
     it('returns early without throwing when event is a duplicate', async () => {
       notificationsRepository.create.mockResolvedValue(null);
 
-      await expect(service.notifyOrderCreated(orderCreatedEvent)).resolves.toBeUndefined();
+      await expect(
+        service.notifyOrderCreated(orderCreatedEvent),
+      ).resolves.toBeUndefined();
       expect(notificationsRepository.create).toHaveBeenCalledTimes(1);
     });
   });
@@ -90,7 +98,9 @@ describe('NotificationsService', () => {
     it('returns early without throwing when event is a duplicate', async () => {
       notificationsRepository.create.mockResolvedValue(null);
 
-      await expect(service.notifyInventoryReserved(inventoryReservedEvent)).resolves.toBeUndefined();
+      await expect(
+        service.notifyInventoryReserved(inventoryReservedEvent),
+      ).resolves.toBeUndefined();
     });
   });
 
@@ -111,7 +121,9 @@ describe('NotificationsService', () => {
     it('returns early without throwing when event is a duplicate', async () => {
       notificationsRepository.create.mockResolvedValue(null);
 
-      await expect(service.notifyInventoryFailed(inventoryFailedEvent)).resolves.toBeUndefined();
+      await expect(
+        service.notifyInventoryFailed(inventoryFailedEvent),
+      ).resolves.toBeUndefined();
     });
   });
 });

@@ -8,7 +8,9 @@ import { MongooseModule } from '@nestjs/mongoose';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
-        uri: config.get<string>('MONGODB_URL') ?? 'mongodb://root:root@localhost:27017/notifications?authSource=admin',
+        uri:
+          config.get<string>('MONGODB_URL') ??
+          'mongodb://root:root@localhost:27017/notifications?authSource=admin',
       }),
     }),
   ],

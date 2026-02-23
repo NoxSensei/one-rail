@@ -28,7 +28,10 @@ export class InventoryReservationRepository {
     return manager.save(InventoryReservationEntity, item);
   }
 
-  async deleteByOrderId(orderId: string, manager: EntityManager): Promise<void> {
+  async deleteByOrderId(
+    orderId: string,
+    manager: EntityManager,
+  ): Promise<void> {
     await manager.delete(InventoryReservationEntity, { orderId });
   }
 }
